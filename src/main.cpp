@@ -1,8 +1,5 @@
 #include <Arduino.h>
-
-#define X_MAX_PIN 2
-#define Y_MAX_PIN 15
-#define Z_MAX_PIN 19
+#include "pins.h"
 
 void setup() {
 	// put your setup code here, to run once:
