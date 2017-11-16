@@ -1,5 +1,6 @@
 #include <Arduino.h>
 #include "pins.h"
+#include "steppers.h"
 
 void setup() {
 	// put your setup code here, to run once:
@@ -13,11 +14,16 @@ void setup() {
 
 	pinMode(Z_MAX_PIN, INPUT);
 	digitalWrite(Z_MAX_PIN, HIGH);
+
+	pinMode(SAFETY_PIN, INPUT);
+	digitalWrite(SAFETY_PIN, HIGH);
+
+	stepperSetup();
 }
 
-int lMaxX, lMaxY, lMaxZ;
+int lMaxX, lMaxY, lMaxZ, lSafety;
 
-void serPrintf(char *szFmt, ...) {
+void serPrintf(const char *szFmt, ...) {
 	char szBfr[50];
 	va_list vArgs;
 	va_start(vArgs, szFmt);
@@ -29,9 +35,25 @@ void serPrintf(char *szFmt, ...) {
 void loop() {
 	// put your main code here, to run repeatedly:
 
+	lSafety = digitalRead(SAFETY_PIN);
 	lMaxX = digitalRead(X_MAX_PIN);
 	lMaxY = digitalRead(Y_MAX_PIN);
 	lMaxZ = digitalRead(Z_MAX_PIN);
 
-	serPrintf("pin state: %d %d %d\r\n", lMaxX, lMaxY, lMaxZ);
+	if(lSafety) {
+		stepperStop();
+		return;
+	}
+	stepperStart();
+
+	uint8_t ubMotors = 0;
+	if(!lMaxX)
+		ubMotors |= STEPPER_X;
+	if(!lMaxY)
+		ubMotors |= STEPPER_Y;
+	if(!lMaxZ)
+		ubMotors |= STEPPER_Z;
+	stepperStep(ubMotors);
+
+	// serPrintf("pin state: %d %d %d\r\n", lMaxX, lMaxY, lMaxZ);
 }
