@@ -19,9 +19,11 @@ void setup() {
 	digitalWrite(SAFETY_PIN, HIGH);
 
 	stepperSetup();
+	Serial.print("dupa");
 }
 
 int lMaxX, lMaxY, lMaxZ, lSafety;
+int s_steps = 0;
 
 void serPrintf(const char *szFmt, ...) {
 	char szBfr[50];
@@ -40,20 +42,29 @@ void loop() {
 	lMaxY = digitalRead(Y_MAX_PIN);
 	lMaxZ = digitalRead(Z_MAX_PIN);
 
-	if(lSafety) {
-		stepperStop();
-		return;
-	}
-	stepperStart();
+	// if(lSafety) {
+	// 	stepperStop();
+	// 	return;
+	// }
+	// stepperStart();
 
-	uint8_t ubMotors = 0;
-	if(!lMaxX)
-		ubMotors |= STEPPER_X;
-	if(!lMaxY)
-		ubMotors |= STEPPER_Y;
-	if(!lMaxZ)
-		ubMotors |= STEPPER_Z;
-	stepperStep(ubMotors);
+	while(Serial.available()) {
+		int lRead = Serial.parseInt();
+		if(lRead > 0)
+			s_steps = lRead;
+	}
+
+	if(s_steps > 0) {
+		uint8_t ubMotors = 0;
+		if(!lMaxX)
+			ubMotors |= STEPPER_X;
+		if(!lMaxY)
+			ubMotors |= STEPPER_Y;
+		if(!lMaxZ)
+			ubMotors |= STEPPER_Z;
+		stepperStep(ubMotors);
+		--s_steps;
+	}
 
 	// serPrintf("pin state: %d %d %d\r\n", lMaxX, lMaxY, lMaxZ);
 }
