@@ -23,4 +23,6 @@
 #define Z_ENABLE_PIN       62
 #define Z_CS_PIN           40
 
+extern uint8_t g_ubMaxX, g_ubMaxY, g_ubMaxZ, g_ubSafety;
+
 #endif // _KD_PINS_H

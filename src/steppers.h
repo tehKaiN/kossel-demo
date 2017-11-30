@@ -28,5 +28,14 @@ void stepperStep(uint8_t ubMotorFlags);
 void stepperStop(void);
 void stepperStart(void);
 
+/**
+ * @return 1 on movement end, otherwise 0.
+ */
+uint8_t steppersZeroPosLoop(void);
+
+void stepperDir(int8_t bDirX, int8_t bDirY, int8_t bDirZ);
+
+extern uint16_t g_uwPosX, g_uwPosY, g_uwPosZ;
+extern uint16_t g_uwDestPosX, g_uwDestPosY, g_uwDestPosZ;
 
 #endif // _KD_STEPPERS_H
