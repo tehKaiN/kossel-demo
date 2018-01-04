@@ -18,7 +18,7 @@ void serPrintf(const char *szFmt, ...) {
 }
 
 void setup() {
-	Serial.begin(9600);
+	Serial.begin(57600);
 	pinMode(X_MAX_PIN, INPUT);
 	digitalWrite(X_MAX_PIN, HIGH);
 

@@ -1,8 +1,8 @@
 clf;
 armcnt = 3;
-Rarms = 3;
-Rpret = 4;
-h = 7;
+Rarms = 152; % (152-(31)-(22.6));
+Rpret = 218;
+h = 300;
 
 % s = serial('COM5', 'baudrate', 9600);
 % fopen(s);
@@ -12,6 +12,7 @@ h = 7;
 xc = 0;
 yc = 0;
 zc = 0;
+drawRadius = 30; % max 90
 
 for i = 1:3
 	xbase(i) = Rarms * sin((2*pi*i)/armcnt);
@@ -50,13 +51,19 @@ view(125, 10);
 % Kossel: 0..25k, 25k is bottom
 
 dont = 0;
-for t = 1:600
-	xc = sin(2*pi/60 *t);
-	yc = cos(2*pi/60 *t);
-	zc = t/100; % h/4 + sin(2*pi/120 * t);
+routex = [];
+routey = [];
+routez = [];
+for t = 1:2:600
+	xc = drawRadius * sin(2*pi/60 *t);
+	yc = drawRadius * cos(2*pi/60 *t);
+	zc = t/600 * h/4; % h/4 + sin(2*pi/120 * t);
+	routex(end+1) = xc;
+	routey(end+1) = yc;
+	routez(end+1) = zc;
 	for i = 1:3
 		dx = xbase(i) - xc;
-		dy = ybase(1) - yc;
+		dy = ybase(i) - yc;
 		z(i) = zc + sqrt(Rpret*Rpret - dx*dx - dy*dy);
 		if(z(i) > h)
 			dont = 1;
@@ -65,13 +72,17 @@ for t = 1:600
 	if(~dont)
 		for i = 1:3
 			set(arms(i), 'XData', [xbase(i), xc], 'YData', [ybase(i), yc], 'ZData', [z(i), zc]);
-			toSend(i) = round(25000 - (z(i)/h) * 25000);
+			toSend(i) = round((z(i)/h) * 25000);
 		end
 	end
 	str = sprintf('x %d y %d z %d\n', toSend(1), toSend(2), toSend(3));
+% 	fprintf('%s', str);
 	fprintf(s, str);
+	hold on;
+	plot3(routex, routey, routez);
+	hold off;
 	drawnow();
-	pause(1);
+	pause(1/60);
 end
 
 % fclose(s);
