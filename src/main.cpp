@@ -8,6 +8,12 @@ uint8_t s_ubDoCalib = 1;
 
 #define SGN(x) (!(x) ? 0 : ((x) > 0 ? 1 : -1))
 
+/**
+ * @brief Printf-compatible function for serial port.
+ *
+ * @param szFmt: Printf-compatible format string.
+ * @param ...: Printf-compatible format string args.
+ */
 void serPrintf(const char *szFmt, ...) {
 	char szBfr[50];
 	va_list vArgs;
@@ -35,12 +41,17 @@ void setup() {
 	Serial.print("HELO\r\n");
 }
 
-uint8_t g_ubMaxX, g_ubMaxY, g_ubMaxZ, g_ubSafety;
-int s_steps = 0;
+uint8_t g_ubMaxX, g_ubMaxY, g_ubMaxZ; ///< Switches at top of movement range.
+uint8_t g_ubSafety; ///< Safety switch.
 
-char s_szBfr[30];
-uint8_t s_ubBfrLen = 0;
+char s_szBfr[30]; ///< Serial receive buffer.
+uint8_t s_ubBfrLen = 0; ///< Receive data length.
 
+/**
+ * @brief Parses command residing in recv buffer info steppers' destination.
+ *
+ * @return 1 on success, otherwise 0.
+ */
 uint8_t cmdInterpret(void) {
 	uint16_t uwTmpX, uwTmpY, uwTmpZ;
 
@@ -48,8 +59,8 @@ uint8_t cmdInterpret(void) {
 	if(s_ubBfrLen <= 1)
 		return 0;
 
-	// Got correct data?
 	if(sscanf(s_szBfr, "x %u y %u z %u", &uwTmpX, &uwTmpY, &uwTmpZ) == 3) {
+		// Got correct data
 		g_uwDestPosX = uwTmpX;
 		g_uwDestPosY = uwTmpY;
 		g_uwDestPosZ = uwTmpZ;
@@ -61,14 +72,21 @@ uint8_t cmdInterpret(void) {
 	return 0;
 }
 
-void loop() {
-	// put your main code here, to run repeatedly:
-
+/**
+ * @brief Reads current state of edge/safety pins.
+ */
+static void readPins(void) {
 	g_ubSafety = digitalRead(SAFETY_PIN);
 	g_ubMaxX = digitalRead(X_MAX_PIN);
 	g_ubMaxY = digitalRead(Y_MAX_PIN);
 	g_ubMaxZ = digitalRead(Z_MAX_PIN);
+}
 
+/**
+ * @brief Receives data via serial link.
+ * If complete line has been read, parses it to destination pos.
+ */
+static void serialRecv(void) {
 	while(Serial.available()) {
 		s_szBfr[s_ubBfrLen++] = Serial.read();
 		if(s_szBfr[s_ubBfrLen-1] == '\r' || s_szBfr[s_ubBfrLen-1] == '\n') {
@@ -76,18 +94,26 @@ void loop() {
 			cmdInterpret();
 			s_ubBfrLen = 0;
 		}
-		s_steps = 0;
 	}
+}
+
+void loop() {
+	readPins();
+	serialRecv();
 
 	if(g_ubSafety) {
+		// Safety switch not pressed - stop everything
 		stepperStop();
 		return;
 	}
 	stepperStart();
 
-	if(s_ubDoCalib)
+	if(s_ubDoCalib) {
+		// Calibration was not done - do it now
 		s_ubDoCalib = !steppersZeroPosLoop();
+	}
 	else {
+		// Move to current destination pos
 		stepperDir(
 			SGN((int)g_uwDestPosX - (int)g_uwPosX),
 			SGN((int)g_uwDestPosY - (int)g_uwPosY),
@@ -102,6 +128,4 @@ void loop() {
 			ubSteppers |= STEPPER_Z;
 		stepperStep(ubSteppers);
 	}
-
-	// serPrintf("pin state: %d %d %d\r\n", g_ubMaxX, g_ubMaxY, g_ubMaxZ);
 }

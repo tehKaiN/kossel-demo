@@ -21,21 +21,48 @@ constexpr tStepperPins g_pPins[3] = {
 	{Z_STEP_PIN, Z_DIR_PIN, Z_ENABLE_PIN, Z_CS_PIN}
 };
 
+/**
+ * @brief Initializes steppers' state.
+ */
 void stepperSetup(void);
 
+/**
+ * @brief Steps selected motors.
+ *
+ * @param ubMotorFlags: OR combination of STEPPER_X, STEPPER_Y and STEPPER_Z.
+ */
 void stepperStep(uint8_t ubMotorFlags);
 
+/**
+ * @brief Stops stepper motors, making their rotors loose.
+ */
 void stepperStop(void);
+
+/**
+ * @brief Powers on stepper motors, making their rotors stiff.
+ */
 void stepperStart(void);
 
 /**
- * @return 1 on movement end, otherwise 0.
+ * @brief Zeroes stepper motors position.
+ * Allows making sure that printer is in known position and stepper counters
+ * are correct. After zeroing position, motors are moved 1000 steps away
+ * from end.
+ *
+ * @return uint8_t 1 if zeroing is done, otherwise 0.
  */
 uint8_t steppersZeroPosLoop(void);
 
+/**
+ * @brief Sets stepper motors' direction. 1 is to bottom, -1 is to top.
+ *
+ * @param bDirX: First stepper direction.
+ * @param bDirY: Second stepper direction.
+ * @param bDirZ: Third stepper direction.
+ */
 void stepperDir(int8_t bDirX, int8_t bDirY, int8_t bDirZ);
 
-extern uint16_t g_uwPosX, g_uwPosY, g_uwPosZ;
-extern uint16_t g_uwDestPosX, g_uwDestPosY, g_uwDestPosZ;
+extern uint16_t g_uwPosX, g_uwPosY, g_uwPosZ; ///< Motors' positions in steps.
+extern uint16_t g_uwDestPosX, g_uwDestPosY, g_uwDestPosZ; ///< Destination positions.
 
 #endif // _KD_STEPPERS_H

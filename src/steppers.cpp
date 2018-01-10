@@ -1,7 +1,7 @@
 #include "steppers.h"
 
-static uint8_t s_ubStarted = 0;
-static int8_t s_pDirs[3] = {0, 0, 0};
+static uint8_t s_ubStarted = 0; ///< 1 if steppers are active (stiff)
+static int8_t s_pDirs[3] = {0, 0, 0}; ///< Steppers' directions.
 
 void stepperSetup(void) {
 	for(uint8_t i = 0; i != 3; ++i) {
