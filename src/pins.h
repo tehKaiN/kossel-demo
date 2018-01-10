@@ -1,7 +1,6 @@
 #ifndef _KD_PINS_H
 #define _KD_PINS_H
 
-#define X_MIN_PIN 3
 #define SAFETY_PIN 3
 
 #define X_MAX_PIN 2
